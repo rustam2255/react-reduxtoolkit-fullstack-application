@@ -28,7 +28,7 @@ const Login = () => {
     if(loggedIn){
       navigate('/')
     }
-  }, [])
+  }, [loggedIn])
   return (
     <div className="text-center w-25 m-auto mt-5">
       <main className="form-signin">
