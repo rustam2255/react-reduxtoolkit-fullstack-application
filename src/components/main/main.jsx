@@ -4,16 +4,26 @@ import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import ArticleService from '../../service/article'
 import { getArticlesStart, getArticlesSucces } from '../../slice/article'
+import articleService from "../../service/article"
 
 const Main = () => {
   const navigate = useNavigate()
   const {articles,isLoading} = useSelector(state => state.article)
+  const {loggedIn, user} = useSelector(state => state.auth)
   const dispatch = useDispatch()
   const getArticles = async() =>{
     dispatch(getArticlesStart())
     try {
       const response = await ArticleService.getArticles()
       dispatch(getArticlesSucces(response.articles))
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  const deleteArticle = async(slug) => {
+    try {
+      await articleService.deleteArticle(slug)
+      getArticles()
     } catch (error) {
       console.log(error);
     }
@@ -40,8 +50,14 @@ const Main = () => {
               <div class="d-flex card-footer justify-content-between align-items-center">
                   <div class="btn-group">
                     <button onClick={() => navigate(`/article/${item.slug}`)} type="button" class="btn btn-sm btn-outline-success">View</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-                    <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>
+                    {loggedIn && user.username === item.author.username && (
+                      <>
+                           <button type="button" class="btn btn-sm btn-outline-secondary" onClick={() => navigate(`/edit-article/${item.slug}`)}>Edit</button>
+                           <button type="button" class="btn btn-sm btn-outline-danger" onClick={() => deleteArticle(item.slug)}>Delete</button>
+                      </>
+                    
+                    )}
+                   
                   </div>
                   <small class="text-body-secondary fw-bold">{item.author.username}</small>
                 </div>
