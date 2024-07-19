@@ -1,12 +1,31 @@
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
+import { Loader } from "../ui/index"
+import { useNavigate } from "react-router-dom"
+import { useEffect } from "react"
+import ArticleService from '../../service/article'
+import { getArticlesStart, getArticlesSucces } from '../../slice/article'
 
 const Main = () => {
-
-  const {articles} = useSelector(state => state.article)
+  const navigate = useNavigate()
+  const {articles,isLoading} = useSelector(state => state.article)
+  const dispatch = useDispatch()
+  const getArticles = async() =>{
+    dispatch(getArticlesStart())
+    try {
+      const response = await ArticleService.getArticles()
+      dispatch(getArticlesSucces(response.articles))
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(() => {
+    getArticles()
+  }, [])
   return (
-    <div className="container">
+    <>
+      {isLoading && <Loader />}
       <div class="album py-5 bg-body-tertiary">
-    <div class="container">
+    <div>
 
       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         {articles.map(item => (
@@ -15,23 +34,24 @@ const Main = () => {
               <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"></rect> </svg>
               <div class="card-body">
                 <p class="card-text fw-bold">{item.title}</p>
-                <p class="card-text ">{item.description}</p>
-                <div class="d-flex justify-content-between align-items-center">
+                <p class="card-text  m-0">{item.description}</p>
+            
+              </div>
+              <div class="d-flex card-footer justify-content-between align-items-center">
                   <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-success">View</button>
+                    <button onClick={() => navigate(`/article/${item.slug}`)} type="button" class="btn btn-sm btn-outline-success">View</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
                     <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>
                   </div>
                   <small class="text-body-secondary fw-bold">{item.author.username}</small>
                 </div>
-              </div>
             </div>
           </div>
       ))}
       
       </div>
     </div>
-  </div></div>
+  </div></>
   )
 }
 
